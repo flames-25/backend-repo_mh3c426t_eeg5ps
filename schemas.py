@@ -1,48 +1,64 @@
 """
-Database Schemas
+Database Schemas for PixFlow 2025
 
-Define your MongoDB collection schemas here using Pydantic models.
-These schemas are used for data validation in your application.
-
-Each Pydantic model represents a collection in your database.
-Model name is converted to lowercase for the collection name:
-- User -> "user" collection
-- Product -> "product" collection
-- BlogPost -> "blogs" collection
+Each Pydantic model represents a collection in MongoDB.
+Collection name = lowercase of class name.
 """
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List, Literal
+from datetime import datetime
 
-from pydantic import BaseModel, Field
-from typing import Optional
+class Admin(BaseModel):
+    full_name: str
+    username: str
+    email: EmailStr
+    password_hash: str
+    last_login_at: Optional[datetime] = None
+    last_login_ip: Optional[str] = None
 
-# Example schemas (replace with your own):
+class Event(BaseModel):
+    slug: str
+    title: str
+    description: Optional[str] = None
+    date: Optional[str] = None
+    location: Optional[str] = None
+    cover_url: Optional[str] = None
+    expires_at: datetime
+    status: Literal["Active", "Expired"] = "Active"
 
-class User(BaseModel):
-    """
-    Users collection schema
-    Collection name: "user" (lowercase of class name)
-    """
-    name: str = Field(..., description="Full name")
-    email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
-    age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
-    is_active: bool = Field(True, description="Whether user is active")
+class Photo(BaseModel):
+    event_id: str
+    original_url: str
+    public_url: str
+    downloads: int = 0
+    created_at: Optional[datetime] = None
+    expires_at: datetime
 
-class Product(BaseModel):
-    """
-    Products collection schema
-    Collection name: "product" (lowercase of class name)
-    """
-    title: str = Field(..., description="Product title")
-    description: Optional[str] = Field(None, description="Product description")
-    price: float = Field(..., ge=0, description="Price in dollars")
-    category: str = Field(..., description="Product category")
-    in_stock: bool = Field(True, description="Whether product is in stock")
+class Settings(BaseModel):
+    default_expiry_days: int = 15
+    background_preset: Optional[Literal["Night Party", "Beach Party", "Elegant Gala"]] = None
+    background_url: Optional[str] = None
+    blur: int = 10
+    watermark_url: Optional[str] = None
+    wm_opacity: int = 35
+    wm_position: Literal["top-left","top-right","bottom-left","bottom-right"] = "bottom-right"
+    wm_enabled: bool = True
+    gift_mode: bool = False
 
-# Add your own schemas here:
-# --------------------------------------------------
+class Monetization(BaseModel):
+    payments_enabled: bool = False
+    price_usd: Optional[float] = 0.0
+    revolut_id: Optional[str] = None
+    ads_enabled: bool = False
+    ads_asset_url: Optional[str] = None
+    ads_placement: Optional[Literal["Homepage","Event","Sidebar"]] = None
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Message(BaseModel):
+    name: str
+    email: EmailStr
+    body: str
+    status: Literal["Unread", "Resolved"] = "Unread"
+
+class Subscriber(BaseModel):
+    name: Optional[str] = None
+    email: EmailStr
